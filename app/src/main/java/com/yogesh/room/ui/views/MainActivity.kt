@@ -3,16 +3,23 @@ package com.yogesh.room.ui.views
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yogesh.room.R
 import com.yogesh.room.data.models.TeacherEntity
 import com.yogesh.room.databinding.ActivityMainBinding
 import com.yogesh.room.databinding.BsCreateOrUpdateTeacherBinding
+import com.yogesh.room.ui.viewModels.SchoolViewModel
 import com.yogesh.room.ui.views.adapters.TeachersAdapter
 import com.yogesh.room.utils.Constants
 import com.yogesh.room.utils.RecyclerViewClicklistenerWithType
+import com.yogesh.room.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
@@ -23,6 +30,9 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
     private var teachersList: MutableList<TeacherEntity> = mutableListOf()
     private lateinit var teachersAdapter: TeachersAdapter
 
+    private val schoolViewModel: SchoolViewModel by viewModels()
+    private var teacherEntity: TeacherEntity? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +41,118 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
 
 
         initSetup()
+
         clickEvents()
+        attachObservers()
+        getAllTeachers()
+    }
+
+    private fun attachObservers() {
+        lifecycleScope.launch {
+            schoolViewModel.getAllTeachersStateFlow.collect {
+                when (it) {
+                    is Resource.Loading -> {
+
+                    }
+
+                    is Resource.Success -> {
+                        teachersList.clear()
+                        teachersList.addAll(it.data)
+                        teachersAdapter.notifyDataSetChanged()
+                        setVisibilityAsPerData(teachersList)
+                    }
+
+                    is Resource.Failed -> {
+                        Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            schoolViewModel.updateTeacherStateFlow.collect {
+                when (it) {
+                    is Resource.Loading -> {
+
+                    }
+
+                    is Resource.Success -> {
+                        if (it.data > 0) {
+                            handleAddOrUpdateSuccess()
+                        } else {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Some error occured while adding teacher",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+
+                    }
+
+                    is Resource.Failed -> {
+                        Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {}
+                }
+
+            }
+        }
+
+        lifecycleScope.launch {
+            schoolViewModel.insertTeacherStateFlow.collect {
+                when (it) {
+                    is Resource.Loading -> {
+
+                    }
+
+                    is Resource.Success -> {
+                        if (it.data > 0) {
+                            handleAddOrUpdateSuccess()
+
+//                            teachersList.add(teacherEntity!!)
+//                            teachersAdapter.notifyDataSetChanged()
+//                            if (bottomSheetDialog.isShowing) {
+//                                bottomSheetDialog.dismiss()
+//                            }
+//                            teacherEntity = null
+//                            setVisibilityAsPerData(teachersList)
+                        } else {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Some error occured while adding teacher",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+
+                    }
+
+                    is Resource.Failed -> {
+                        Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {}
+                }
+
+            }
+        }
+    }
+
+    private fun handleAddOrUpdateSuccess() {
+        schoolViewModel.getAllTeachers()
+        teacherEntity = null
+        if (bottomSheetDialog.isShowing) {
+            bottomSheetDialog.dismiss()
+        }
+        setVisibilityAsPerData(teachersList)
+    }
+
+    private fun getAllTeachers() {
+        schoolViewModel.getAllTeachers()
     }
 
     private fun clickEvents() {
@@ -40,29 +161,32 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         }
 
         bottomSheetDialogBinding.createOrUpdateTeacherBtn.setOnClickListener {
-
+            if (bottomSheetDialogBinding.nameEt.text.toString().isEmpty()) {
+                bottomSheetDialogBinding.nameEt.error = "Please enter name"
+                bottomSheetDialogBinding.nameEt.requestFocus()
+            } else {
+                teacherEntity!!.name = bottomSheetDialogBinding.nameEt.text.toString().trim()
+                schoolViewModel.addOrUpdateTeacher(teacherEntity!!)
+            }
         }
     }
 
     private fun autoWriteAvailableDataToBottomSheetThenShow(teacherEntity: TeacherEntity?) {
         if (teacherEntity == null) {
             bottomSheetDialogBinding.nameEt.setText("")
-            bottomSheetDialogBinding.createOrUpdateTeacherBtn.setText(getString(R.string.save))
+            bottomSheetDialogBinding.createOrUpdateTeacherBtn.text = getString(R.string.save)
+            this.teacherEntity = TeacherEntity(name = "")
         } else {
             bottomSheetDialogBinding.nameEt.setText(teacherEntity.name)
-            bottomSheetDialogBinding.createOrUpdateTeacherBtn.setText(getString(R.string.save_changes))
+            bottomSheetDialogBinding.createOrUpdateTeacherBtn.text =
+                getString(R.string.save_changes)
         }
-
-
-
+        bottomSheetDialogBinding.nameEt.setSelection(bottomSheetDialogBinding.nameEt.text.toString().length)
+        bottomSheetDialogBinding.nameEt.requestFocus()
         bottomSheetDialog.show()
     }
 
     private fun initSetup() {
-
-        teachersList.add(TeacherEntity(name = "yogesh"))
-        teachersList.add(TeacherEntity(name = "muskan"))
-        teachersList.add(TeacherEntity(name = "sachin"))
 
         teachersAdapter = TeachersAdapter(teachersList, this)
         activityMainBinding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -73,7 +197,6 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         bottomSheetDialogBinding = BsCreateOrUpdateTeacherBinding.inflate(layoutInflater)
         bottomSheetDialog.setContentView(bottomSheetDialogBinding.root)
 
-        setVisibilityAsPerData(teachersList)
     }
 
     private fun setVisibilityAsPerData(teachersList: MutableList<TeacherEntity>) {
@@ -88,6 +211,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
 
     override fun onClick(position: Int, type: String) {
         if (type == Constants.TEACHER) {
+            teacherEntity = teachersList[position]
             autoWriteAvailableDataToBottomSheetThenShow(teachersList[position])
         }
     }
