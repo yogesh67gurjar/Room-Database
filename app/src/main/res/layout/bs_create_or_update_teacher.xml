@@ -5,17 +5,34 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <TextView
-
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_15sdp"
-        android:fontFamily="@font/outfit_bold"
-        android:gravity="center"
-        android:text="Add"
-        android:textColor="@color/black"
+        android:layout_marginTop="@dimen/_15sdp">
 
-        android:textSize="@dimen/_12ssp" />
+        <TextView
+            android:id="@+id/addOrUpdateTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/outfit_bold"
+            android:gravity="center"
+            android:text="Add"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_12ssp" />
+
+        <ImageView
+            android:id="@+id/deleteBtn"
+            android:layout_width="@dimen/_16sdp"
+            android:layout_height="@dimen/_16sdp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/_16sdp"
+            android:src="@drawable/img_delete" />
+
+
+    </RelativeLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -23,15 +40,13 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/_18sdp"
         android:layout_marginTop="@dimen/_24sdp"
-        android:hint="Enter Name"
-       >
+        android:hint="Enter Name">
 
         <!--this is the actual edit text which takes the input-->
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/nameEt"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-             />
+            android:layout_height="wrap_content" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

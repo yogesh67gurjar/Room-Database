@@ -25,7 +25,7 @@
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginHorizontal="@dimen/_8sdp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -33,20 +33,34 @@
                 android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
                 android:fontFamily="@font/outfit_bold"
-
                 android:includeFontPadding="false"
+                android:maxLines="1"
                 android:textSize="@dimen/_13ssp" />
 
             <TextView
                 android:id="@+id/subject"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
                 android:fontFamily="@font/outfit_medium"
                 android:includeFontPadding="false"
+                android:maxLines="1"
                 android:textSize="@dimen/_9ssp" />
 
+
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/editBtn"
+            android:layout_width="@dimen/_16sdp"
+            android:layout_height="@dimen/_16sdp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/_16sdp"
+            android:src="@drawable/img_edit" />
+
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

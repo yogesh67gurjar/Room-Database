@@ -175,11 +175,16 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         if (teacherEntity == null) {
             bottomSheetDialogBinding.nameEt.setText("")
             bottomSheetDialogBinding.createOrUpdateTeacherBtn.text = getString(R.string.save)
+            bottomSheetDialogBinding.addOrUpdateTv.text = getString(R.string.add)
+            bottomSheetDialogBinding.deleteBtn.visibility = View.GONE
             this.teacherEntity = TeacherEntity(name = "")
         } else {
             bottomSheetDialogBinding.nameEt.setText(teacherEntity.name)
             bottomSheetDialogBinding.createOrUpdateTeacherBtn.text =
                 getString(R.string.save_changes)
+            bottomSheetDialogBinding.addOrUpdateTv.text = getString(R.string.update)
+            bottomSheetDialogBinding.deleteBtn.visibility = View.VISIBLE
+
         }
         bottomSheetDialogBinding.nameEt.setSelection(bottomSheetDialogBinding.nameEt.text.toString().length)
         bottomSheetDialogBinding.nameEt.requestFocus()
@@ -187,16 +192,13 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
     }
 
     private fun initSetup() {
-
-        teachersAdapter = TeachersAdapter(teachersList, this)
+        teachersAdapter = TeachersAdapter(teachersList, this, this)
         activityMainBinding.recyclerView.layoutManager = LinearLayoutManager(this)
         activityMainBinding.recyclerView.adapter = teachersAdapter
-
 
         bottomSheetDialog = BottomSheetDialog(this@MainActivity)
         bottomSheetDialogBinding = BsCreateOrUpdateTeacherBinding.inflate(layoutInflater)
         bottomSheetDialog.setContentView(bottomSheetDialogBinding.root)
-
     }
 
     private fun setVisibilityAsPerData(teachersList: MutableList<TeacherEntity>) {
@@ -210,9 +212,12 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
     }
 
     override fun onClick(position: Int, type: String) {
-        if (type == Constants.TEACHER) {
+        if (type == Constants.EDIT) {
             teacherEntity = teachersList[position]
             autoWriteAvailableDataToBottomSheetThenShow(teachersList[position])
+        } else if (type == Constants.DELETE) {
+            Toast.makeText(this@MainActivity, teachersList[position].name, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 }

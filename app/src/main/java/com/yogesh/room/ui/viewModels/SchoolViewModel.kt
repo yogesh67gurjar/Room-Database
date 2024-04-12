@@ -33,15 +33,11 @@ class SchoolViewModel @Inject constructor(private val studentRepository: SchoolR
 
     fun addOrUpdateTeacher(teacherEntity: TeacherEntity) {
         viewModelScope.launch {
-            Log.d("idid sssssss", teacherEntity.id.toString())
             if (teacherEntity.id == 0) {
-                Log.d("done sssssss", "zero")
-
                 studentRepository.insertTeacher(teacherEntity).collect {
                     _insertTeacherStateFlow.value = it
                 }
             } else {
-                Log.d("done sssssss", "non zero")
                 studentRepository.updateTeacher(teacherEntity).collect {
                     _updateTeacherStateFlow.value = it
                 }
