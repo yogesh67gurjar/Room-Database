@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.yogesh.room.data.dao.TeacherDao
 import com.yogesh.room.data.models.TeacherEntity
 
-@Database(entities = [TeacherEntity::class], version = 1, exportSchema = true)
+@Database(entities = [TeacherEntity::class], version = 2, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun getTeacherDao(): TeacherDao
 }

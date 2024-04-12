@@ -30,4 +30,11 @@ class SchoolRepository @Inject constructor(private val appDatabase: AppDatabase)
         emit(Resource.failed(it.message!!))
     }
 
+    suspend fun deleteTeacher(teacherEntity: TeacherEntity): Flow<Resource<Int>> = flow {
+        emit(Resource.loading())
+        emit(Resource.success(appDatabase.getTeacherDao().deleteTeacher(teacherEntity)))
+    }.catch{
+        emit(Resource.failed(it.message!!))
+    }
+
 }

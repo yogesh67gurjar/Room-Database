@@ -39,9 +39,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
 
-
         initSetup()
-
         clickEvents()
         attachObservers()
         getAllTeachers()
@@ -51,9 +49,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         lifecycleScope.launch {
             schoolViewModel.getAllTeachersStateFlow.collect {
                 when (it) {
-                    is Resource.Loading -> {
-
-                    }
+                    is Resource.Loading -> {}
 
                     is Resource.Success -> {
                         teachersList.clear()
@@ -74,9 +70,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         lifecycleScope.launch {
             schoolViewModel.updateTeacherStateFlow.collect {
                 when (it) {
-                    is Resource.Loading -> {
-
-                    }
+                    is Resource.Loading -> {}
 
                     is Resource.Success -> {
                         if (it.data > 0) {
@@ -87,9 +81,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
                                 "Some error occured while adding teacher",
                                 Toast.LENGTH_SHORT
                             ).show()
-
                         }
-
                     }
 
                     is Resource.Failed -> {
@@ -105,14 +97,11 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         lifecycleScope.launch {
             schoolViewModel.insertTeacherStateFlow.collect {
                 when (it) {
-                    is Resource.Loading -> {
-
-                    }
+                    is Resource.Loading -> {}
 
                     is Resource.Success -> {
                         if (it.data > 0) {
                             handleAddOrUpdateSuccess()
-
 //                            teachersList.add(teacherEntity!!)
 //                            teachersAdapter.notifyDataSetChanged()
 //                            if (bottomSheetDialog.isShowing) {
@@ -126,9 +115,7 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
                                 "Some error occured while adding teacher",
                                 Toast.LENGTH_SHORT
                             ).show()
-
                         }
-
                     }
 
                     is Resource.Failed -> {
@@ -138,6 +125,32 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
                     else -> {}
                 }
 
+            }
+        }
+
+        lifecycleScope.launch {
+            schoolViewModel.deleteTeacherStateFlow.collect {
+                when (it) {
+                    is Resource.Loading -> {}
+
+                    is Resource.Success -> {
+                        if (it.data > 0) {
+                            handleAddOrUpdateSuccess()
+                        } else {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Some error occured while adding teacher",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+
+                    is Resource.Failed -> {
+                        Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_SHORT).show()
+                    }
+
+                    else -> {}
+                }
             }
         }
     }
@@ -164,27 +177,36 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
             if (bottomSheetDialogBinding.nameEt.text.toString().isEmpty()) {
                 bottomSheetDialogBinding.nameEt.error = "Please enter name"
                 bottomSheetDialogBinding.nameEt.requestFocus()
+            } else if (bottomSheetDialogBinding.subjectEt.text.toString().isEmpty()) {
+                bottomSheetDialogBinding.subjectEt.error = "Please enter subject"
+                bottomSheetDialogBinding.subjectEt.requestFocus()
             } else {
                 teacherEntity!!.name = bottomSheetDialogBinding.nameEt.text.toString().trim()
+                teacherEntity!!.subject = bottomSheetDialogBinding.subjectEt.text.toString().trim()
                 schoolViewModel.addOrUpdateTeacher(teacherEntity!!)
             }
+        }
+
+        bottomSheetDialogBinding.deleteBtn.setOnClickListener {
+            schoolViewModel.deleteTeacher(teacherEntity!!)
         }
     }
 
     private fun autoWriteAvailableDataToBottomSheetThenShow(teacherEntity: TeacherEntity?) {
         if (teacherEntity == null) {
             bottomSheetDialogBinding.nameEt.setText("")
+            bottomSheetDialogBinding.subjectEt.setText("")
             bottomSheetDialogBinding.createOrUpdateTeacherBtn.text = getString(R.string.save)
             bottomSheetDialogBinding.addOrUpdateTv.text = getString(R.string.add)
             bottomSheetDialogBinding.deleteBtn.visibility = View.GONE
-            this.teacherEntity = TeacherEntity(name = "")
+            this.teacherEntity = TeacherEntity(name = "", subject = "")
         } else {
             bottomSheetDialogBinding.nameEt.setText(teacherEntity.name)
+            bottomSheetDialogBinding.subjectEt.setText(teacherEntity.subject)
             bottomSheetDialogBinding.createOrUpdateTeacherBtn.text =
                 getString(R.string.save_changes)
             bottomSheetDialogBinding.addOrUpdateTv.text = getString(R.string.update)
             bottomSheetDialogBinding.deleteBtn.visibility = View.VISIBLE
-
         }
         bottomSheetDialogBinding.nameEt.setSelection(bottomSheetDialogBinding.nameEt.text.toString().length)
         bottomSheetDialogBinding.nameEt.requestFocus()
@@ -215,9 +237,6 @@ class MainActivity : AppCompatActivity(), RecyclerViewClicklistenerWithType {
         if (type == Constants.EDIT) {
             teacherEntity = teachersList[position]
             autoWriteAvailableDataToBottomSheetThenShow(teachersList[position])
-        } else if (type == Constants.DELETE) {
-            Toast.makeText(this@MainActivity, teachersList[position].name, Toast.LENGTH_SHORT)
-                .show()
         }
     }
 }

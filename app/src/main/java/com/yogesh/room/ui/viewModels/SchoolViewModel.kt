@@ -31,6 +31,11 @@ class SchoolViewModel @Inject constructor(private val studentRepository: SchoolR
     val updateTeacherStateFlow: StateFlow<Resource<Int>?> =
         _updateTeacherStateFlow
 
+    private val _deleteTeacherStateFlow: MutableStateFlow<Resource<Int>?> =
+        MutableStateFlow(null)
+    val deleteTeacherStateFlow: StateFlow<Resource<Int>?> =
+        _deleteTeacherStateFlow
+
     fun addOrUpdateTeacher(teacherEntity: TeacherEntity) {
         viewModelScope.launch {
             if (teacherEntity.id == 0) {
@@ -51,6 +56,15 @@ class SchoolViewModel @Inject constructor(private val studentRepository: SchoolR
                 _getAllTeachersStateFlow.value = it
             }
         }
+    }
+
+    fun deleteTeacher(teacherEntity: TeacherEntity) {
+        viewModelScope.launch {
+            studentRepository.deleteTeacher(teacherEntity).collect {
+                _deleteTeacherStateFlow.value = it
+            }
+        }
+
     }
 
 

@@ -33,6 +33,7 @@ class TeachersAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val singleUnit = teachersList[position]
         holder.name.text = singleUnit.name
+        holder.subject.text = singleUnit.subject
 
         holder.editBtn.setOnClickListener {
             if (holder.adapterPosition != RecyclerView.NO_POSITION) {
